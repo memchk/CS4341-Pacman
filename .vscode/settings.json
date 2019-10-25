@@ -1,4 +1,0 @@
-{
-    "systemverilog.launchConfiguration": "verilator --sv --lint-only --language 1800-2012 --Wall -Irtl -Itb",
-    "C_Cpp.errorSquiggles": "Disabled"
-}

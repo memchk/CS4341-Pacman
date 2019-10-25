@@ -76,11 +76,11 @@ always_ff @(posedge i_clk) begin
 
         // Handle the H Sync pulse appropriately.
         if (r_pix_cnt == ACTIVE_WIDTH + H_FRONT_PORCH - 1) begin
-            o_hsync <= 1'b1;
+            o_hsync <= 1'b0;
         end
 
         if (r_pix_cnt == ACTIVE_WIDTH + H_FRONT_PORCH + H_PULSE - 1) begin
-            o_hsync <= 1'b0;
+            o_hsync <= 1'b1;
         end
 
         // Vertical Reset, blanking.
@@ -92,11 +92,11 @@ always_ff @(posedge i_clk) begin
         // This mirrors the horizontal code above, except it is triggered by the eol to ensure
         // proper line timings.
         if (r_eol && r_line_cnt == ACTIVE_HEIGHT + V_FRONT_PORCH - 1) begin
-            o_vsync <= 1'b1;
+            o_vsync <= 1'b0;
         end
 
         if (r_eol && r_line_cnt == ACTIVE_HEIGHT + V_FRONT_PORCH + V_PULSE - 1) begin
-            o_vsync <= 1'b0;
+            o_vsync <= 1'b1;
         end
 
         if (r_eol && r_line_cnt == ACTIVE_HEIGHT - 1) begin
