@@ -1,4 +1,5 @@
-`include "environment.sv"
+`default_nettype none
+import project::coord_t;
 /* 
     DESCRIPTION: 
     Produces VGA timing signals based upon the configured parameters. Outputs
@@ -17,7 +18,8 @@ module vtg #(
     parameter H_PULSE = 128 
 )(
     input logic i_clk, i_rst,
-    output logic o_hsync, o_vsync, o_vblank, o_hblank, o_blank
+    output logic o_hsync, o_vsync, o_vblank, o_hblank, o_blank,
+    output coord_t o_screen
 );
 
 localparam H_TOTAL = H_FRONT_PORCH + H_BACK_PORCH + H_PULSE + ACTIVE_WIDTH;
@@ -37,8 +39,11 @@ function integer clogb2;
 endfunction
 
 // Pixel and line counters.
-logic [clogb2(V_TOTAL):0] r_line_cnt;
-logic [clogb2(H_TOTAL):0] r_pix_cnt;
+logic [clogb2(V_TOTAL-1):0] r_line_cnt;
+logic [clogb2(H_TOTAL-1):0] r_pix_cnt;
+
+assign o_screen.x = r_pix_cnt[clogb2(ACTIVE_WIDTH)-1:0];
+assign o_screen.y = r_line_cnt[clogb2(ACTIVE_HEIGHT)-1:0];
 
 // This is a strobe signal that is high 1-clock cycle before eol,
 // allowing us to enable our registers off of it.

@@ -1,4 +1,4 @@
-`include "environment.sv"
+`default_nettype none
 /* 
     DESCRIPTION: 
     Encodes Input Data + Control Signals into 10-bit TMDS encoded signals.

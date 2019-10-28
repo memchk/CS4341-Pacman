@@ -73,6 +73,7 @@ public:
 
 	virtual	void	closetrace(void) {
 		if (m_trace) {
+			m_trace->flush();
 			m_trace->close();
 			delete m_trace;
 			m_trace = NULL;
@@ -100,7 +101,6 @@ public:
 		eval();
 		if (m_trace) {
 			m_trace->dump((uint64_t)(10*m_tickcount+5));
-			m_trace->flush();
 		}
 	}
 

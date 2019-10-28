@@ -1,12 +1,11 @@
-module game_state #(
-    parameter SCREEN_WIDTH = 800,
-    parameter SCREEN_HEIGHT = 600
-)(
+`default_nettype none
+import project::coord_t;
+module game_state (
     input logic i_clk, i_en, i_rst,
     input logic [3:0] i_joystick,
-    output logic [clogb2(SCREEN_WIDTH):0] pacman_x,
-    output logic [clogb2(SCREEN_HEIGHT):0] pacman_y
+    output coord_t o_pacman
 );
+import project::*;
 
 typedef enum {
     IDLE,
@@ -19,20 +18,6 @@ state_t state, next_state;
 logic [3:0] r_joystick;
 
 logic [1:0] r_en_edge;
-
-// Taken from https://stackoverflow.com/a/5276596
-// Function to calculate ceil(log2(x)) of a number,
-// useful for determining bit widths for registers.
-function integer clogb2;
-    input [31:0] value;
-    begin
-        value = value - 1;
-        for (clogb2 = 0; value > 0; clogb2 = clogb2 + 1) begin
-            value = value >> 1;
-        end
-    end
-endfunction
-
 
 // State machine drivers.
 always_comb begin
@@ -74,25 +59,25 @@ end
 // Input to Movement Processing.
 always_ff @(posedge i_clk) begin
     if (i_rst) begin
-        pacman_x <= '0;
-        pacman_y <= '0;
+        o_pacman.x <= '0;
+        o_pacman.y <= '0;
     end else if (state == MOVEMENT) begin
         unique case (1'b1)
             // Up.
             r_joystick[3]: begin
-                pacman_y <= pacman_y - 8;
+                o_pacman.y <= o_pacman.y - 4;
             end
             // Right.
             r_joystick[2]: begin
-                pacman_x <= pacman_x + 8;
+                o_pacman.x <= o_pacman.x + 4;
             end
             // Down.
             r_joystick[1]: begin
-                pacman_y <= pacman_y + 8;
+                o_pacman.y <= o_pacman.y + 4;
             end
             // Left.
             r_joystick[0]: begin
-                pacman_x <= pacman_x - 8;
+                o_pacman.x <= o_pacman.x - 4;
             end
         endcase
     end
