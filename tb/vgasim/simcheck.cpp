@@ -100,7 +100,7 @@ int	main(int argc, char **argv) {
 
 	tb = new TESTBENCH();
 
-	// tb->opentrace("vga.vcd");
+	tb->opentrace("vga.vcd");
 	Gtk::Main::run(tb->m_vga);
 
 	exit(0);

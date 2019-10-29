@@ -8,10 +8,12 @@
 class TESTBENCH : public TESTB<Vdrawing_test> {
 public:
     VGAWIN m_vga;
-
+private:
+    bool m_move_dir;
 public:
 
     TESTBENCH(int h, int v): m_vga(h, v) {
+        m_move_dir = true;
         Glib::signal_idle().connect(sigc::mem_fun((*this),&TESTBENCH::on_tick));
     }
 
@@ -28,6 +30,13 @@ public:
 			m_core->o_r,
 			m_core->o_g,
 			m_core->o_b);
+
+        if(m_tickcount % 1000000 < 500000) {
+            m_core->i_joystick = 0b0010;
+        } else {
+            m_core->i_joystick = 0b0100;
+        }
+
 		TESTB<Vdrawing_test>::tick();
 	}
 };
