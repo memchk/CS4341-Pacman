@@ -13,7 +13,7 @@ DEPS := $(wildcard $(OBJDIR)/*.d)
 ALLSV := $(wildcard rtl/*.sv) $(wildcard tb/*.sv)
 
 .PHONY: all
-all: Vvtg Vgame_state
+all: Vdrawing_test Vgame_state Vvideo_arbiter
 
 $(OBJDIR)/%.o: $(VINCD)/%.cpp
 	$(mk-objdir)
@@ -45,6 +45,13 @@ BIN_Vdrawing_test := $(OBJDIR)/Vdrawing_test
 Vdrawing_test: $(BIN_Vdrawing_test)
 $(BIN_Vdrawing_test): $(VOBJS) $(VGASIM) tb/drawing_test.cpp $(OBJDIR)/Vdrawing_test__ALL.a
 	$(CXX) $(CXXFLAGS) $(GFXFLAGS) $(VINCS) $(GFXLIBS) $(VOBJS) $(VGASIM) tb/drawing_test.cpp $(OBJDIR)/Vdrawing_test__ALL.a -o $@
+
+
+BIN_Vvideo_arbiter := $(OBJDIR)/Vvideo_arbiter
+.PHONY: Vvideo_arbiter
+Vvideo_arbiter: $(BIN_Vvideo_arbiter)
+$(BIN_Vvideo_arbiter): $(VOBJS) tb/video_arbiter_tb.cpp $(OBJDIR)/Vvideo_arbiter__ALL.a
+	$(CXX) $(CXXFLAGS) $(VINCS) $(VOBJS) tb/video_arbiter_tb.cpp $(OBJDIR)/Vvideo_arbiter__ALL.a -o $@
 
 define	mk-objdir
 	@bash -c "if [ ! -e $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi"

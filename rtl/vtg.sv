@@ -1,5 +1,7 @@
 `default_nettype none
 import project::coord_t;
+import project::clogb2;
+
 /* 
     DESCRIPTION: 
     Produces VGA timing signals based upon the configured parameters. Outputs
@@ -26,19 +28,6 @@ module vtg #(
 
 localparam H_TOTAL = H_FRONT_PORCH + H_BACK_PORCH + H_PULSE + ACTIVE_WIDTH;
 localparam V_TOTAL = V_FRONT_PORCH + V_BACK_PORCH + V_PULSE + ACTIVE_HEIGHT;
-
-// Taken from https://stackoverflow.com/a/5276596
-// Function to calculate ceil(log2(x)) of a number,
-// useful for determining bit widths for registers.
-function integer clogb2;
-    input [31:0] value;
-    begin
-        value = value - 1;
-        for (clogb2 = 0; value > 0; clogb2 = clogb2 + 1) begin
-            value = value >> 1;
-        end
-    end
-endfunction
 
 // Pixel and line counters.
 logic [clogb2(V_TOTAL-1):0] r_line_cnt;

@@ -10,18 +10,40 @@ public:
     VGAWIN m_vga;
 private:
     bool m_move_dir;
+    int m_joystick;
 public:
 
     TESTBENCH(int h, int v): m_vga(h, v) {
         m_move_dir = true;
+        m_vga.signal_key_press_event().connect(sigc::mem_fun((*this), &TESTBENCH::on_keypress), false);
         Glib::signal_idle().connect(sigc::mem_fun((*this),&TESTBENCH::on_tick));
     }
 
     bool on_tick() {
-        for (size_t i = 0; i < 5; i++)
+        for (size_t i = 0; i < 1000; i++)
         {
             tick();
         }
+        return true;
+    }
+
+    bool on_keypress(GdkEventKey *event) {
+        // std::cout << "KEYPRESS!" << std::endl;
+        switch (event->keyval) {
+            case GDK_KEY_a:
+                m_joystick = 0b0001;
+                break;
+            case GDK_KEY_s:
+                m_joystick = 0b0010;
+                break;
+            case GDK_KEY_d:
+                m_joystick = 0b0100;
+                break;
+            case GDK_KEY_w:
+                m_joystick = 0b1000;
+                break;
+        }
+
         return true;
     }
 
@@ -30,12 +52,24 @@ public:
 			m_core->o_r,
 			m_core->o_g,
 			m_core->o_b);
+        
+        m_core->i_joystick = m_joystick;
 
-        if(m_tickcount % 1000000 < 500000) {
-            m_core->i_joystick = 0b0010;
-        } else {
-            m_core->i_joystick = 0b0100;
-        }
+        // int time_const = 80000000;
+
+        // if(m_tickcount % time_const < time_const / 2) {
+        //     if (m_tickcount % time_const < time_const / 4) {
+        //         m_core->i_joystick = 0b0010;
+        //     } else {
+        //         m_core->i_joystick = 0b0001;
+        //     }
+        // } else {
+        //     if (m_tickcount % time_const < (3*time_const) / 4) {
+        //         m_core->i_joystick = 0b1000;
+        //     } else {
+        //         m_core->i_joystick = 0b0100;
+        //     }
+        // }
 
 		TESTB<Vdrawing_test>::tick();
 	}
@@ -46,7 +80,7 @@ int main(int argc, char** argv) {
 	Verilated::commandArgs(argc, argv);
 
     auto tb = new TESTBENCH(800, 600);
-    //tb->opentrace("trace/drawing_test.vcd");
+    // tb->opentrace("trace/drawing_test.vcd");
     tb->reset();
     Gtk::Main::run(tb->m_vga);
 }

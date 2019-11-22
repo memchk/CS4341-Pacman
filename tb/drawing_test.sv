@@ -19,9 +19,13 @@ module drawing_test (
     coord_t screen_dly [1:0];
 
     coord_t pacman;
+    logic [2:0] pacman_dir;
 
-    assign o_hsync = hsync_dly[1];
-    assign o_vsync = vsync_dly[1];    
+    rgb_t va_vport [1:0];
+    logic [1:0] va_req;
+
+    // assign o_hsync = hsync_dly[1];
+    // assign o_vsync = vsync_dly[1];    
     assign screen_x = screen_dly[1][9:0];
     assign screen_y = screen_dly[1][19:10];
 
@@ -46,8 +50,21 @@ module drawing_test (
         .i_rst(i_rst),
         .i_en(vblank),
         .i_joystick(i_joystick),
-        .o_pacman(pacman)
+        .o_pacman(pacman),
+        .o_pacman_dir(pacman_dir)
     ); 
+
+    video_arbiter va (
+        .i_clk(i_clk),
+        .i_rst(i_rst),
+        .i_vport(va_vport),
+        .i_req(va_req),
+        .i_hsync(hsync_dly[1]),
+        .i_vsync(vsync_dly[1]),
+        .o_hsync(o_hsync),
+        .o_vsync(o_vsync),
+        .o_vport({o_r, o_g, o_b})
+    );
 
     bekman_sprite bs (
         .i_clk(i_clk),
@@ -55,16 +72,19 @@ module drawing_test (
         .i_en(~blank),
         .i_pacman(pacman),
         .i_screen(vtg_screen),
-        .o_color({o_r, o_g, o_b}),
-        .o_valid()
+        .o_color(va_vport[1]),
+        .i_rotate(pacman_dir),
+        .o_valid(va_req[1])
     );
 
-    // test_pattern tp (
-    //     .i_clk(i_clk),
-    //     .i_rst(i_rst),
-    //     .i_screen(vtg_screen),
-    //     .o_color({o_r, o_g, o_b})
-    // );
+    map_sprite mp (
+        .i_clk(i_clk),
+        .i_rst(i_rst),
+        .i_en(~blank),
+        .i_screen(vtg_screen),
+        .o_color(va_vport[0]),
+        .o_valid(va_req[0])
+    );
 
     // Delay by one since the video layer takes a clock cycle of delay.
     always_ff @(posedge i_clk) begin

@@ -9,8 +9,12 @@ int main(int argc, char** argv) {
     TESTBENCH tb;
     tb.opentrace("trace/game_state.vcd");
     tb.reset();
-    while(!Verilated::gotFinish() && tb.m_tickcount < 1000000) {
-        tb.tick();
+    tb.m_core->i_joystick = 1;
+    while(!Verilated::gotFinish() && tb.m_tickcount < 1000) {
+        tb.m_core->i_en = 1;
+        TBADVANCE(20);
+        tb.m_core->i_en = 0;
+        TBADVANCE(20);
     }
     return 0;
 }

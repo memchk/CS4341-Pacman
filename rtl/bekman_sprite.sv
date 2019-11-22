@@ -7,6 +7,7 @@ import project::rgb_t;
 
 module bekman_sprite(
     input logic i_clk, i_rst, i_en,
+    input [2:0] i_rotate,
     input coord_t i_pacman, i_screen,
     output logic o_valid,
     output rgb_t o_color
@@ -15,39 +16,120 @@ module bekman_sprite(
 logic [3:0] pix_count;
 logic [3:0] line_count;
 
-logic xvalid, yvalid;
+logic xvalid, yvalid, tvalid;
 
-assign o_valid = xvalid & yvalid;
+assign tvalid = xvalid & yvalid;
+assign o_valid = tvalid & rom_value;
 
-reg [15:0] sprite_rom [15:0];
+reg [15:0] sprite_rom [4][16];
 
+logic [3:0] rom_r, rom_c;
+logic [1:0] rom_sel;
+
+logic rom_value;
 
 initial begin
-    sprite_rom[00] = 16'b0000011111000000;
-    sprite_rom[01] = 16'b0001111111110000;
-    sprite_rom[02] = 16'b0001111111111000;
-    sprite_rom[03] = 16'b0000111111111100;
-    sprite_rom[04] = 16'b0000011111111100;
-    sprite_rom[05] = 16'b0000001111111110;
-    sprite_rom[06] = 16'b0000000111111110;
-    sprite_rom[07] = 16'b0000000111111110;
-    sprite_rom[08] = 16'b0000000111111110;
-    sprite_rom[09] = 16'b0000001111111110;
-    sprite_rom[10] = 16'b0000011111111100;
-    sprite_rom[11] = 16'b0000111111111100;
-    sprite_rom[12] = 16'b0001111111111000;
-    sprite_rom[13] = 16'b0001111111110000;
-    sprite_rom[14] = 16'b0000011111000000;
-    sprite_rom[15] = 16'b0000000000000000;
+    sprite_rom[0][00] = 16'b0000011111000000;
+    sprite_rom[0][01] = 16'b0001111111110000;
+    sprite_rom[0][02] = 16'b0001111111111000;
+    sprite_rom[0][03] = 16'b0000111111111100;
+    sprite_rom[0][04] = 16'b0000011111111100;
+    sprite_rom[0][05] = 16'b0000001111111110;
+    sprite_rom[0][06] = 16'b0000000111111110;
+    sprite_rom[0][07] = 16'b0000000111111110;
+    sprite_rom[0][08] = 16'b0000000111111110;
+    sprite_rom[0][09] = 16'b0000001111111110;
+    sprite_rom[0][10] = 16'b0000011111111100;
+    sprite_rom[0][11] = 16'b0000111111111100;
+    sprite_rom[0][12] = 16'b0001111111111000;
+    sprite_rom[0][13] = 16'b0001111111110000;
+    sprite_rom[0][14] = 16'b0000011111000000;
+    sprite_rom[0][15] = 16'b0000000000000000;
 end
 
-always_ff @(posedge i_clk) begin
-    if(o_valid) begin
-        o_color.r <= {8{(sprite_rom[line_count][pix_count])}};
-        o_color.g <= {8{(sprite_rom[line_count][pix_count])}};
-        o_color.b <= '0;
+initial begin
+    sprite_rom[1][00] = 16'b0000011111000000;
+    sprite_rom[1][01] = 16'b0001111111110000;
+    sprite_rom[1][02] = 16'b0011111111111000;
+    sprite_rom[1][03] = 16'b0011111111111100;
+    sprite_rom[1][04] = 16'b0001111111111100;
+    sprite_rom[1][05] = 16'b0000111111111110;
+    sprite_rom[1][06] = 16'b0000011111111110;
+    sprite_rom[1][07] = 16'b0000001111111110;
+    sprite_rom[1][08] = 16'b0000011111111110;
+    sprite_rom[1][09] = 16'b0000111111111110;
+    sprite_rom[1][10] = 16'b0001111111111100;
+    sprite_rom[1][11] = 16'b0011111111111100;
+    sprite_rom[1][12] = 16'b0011111111111000;
+    sprite_rom[1][13] = 16'b0001111111110000;
+    sprite_rom[1][14] = 16'b0000011111000000;
+    sprite_rom[1][15] = 16'b0000000000000000;
+end
+
+initial begin
+    sprite_rom[2][00] = 16'b0000011111000000;
+    sprite_rom[2][01] = 16'b0001111111110000;
+    sprite_rom[2][02] = 16'b0011111111111000;
+    sprite_rom[2][03] = 16'b0111111111111100;
+    sprite_rom[2][04] = 16'b0011111111111100;
+    sprite_rom[2][05] = 16'b0001111111111110;
+    sprite_rom[2][06] = 16'b0000111111111110;
+    sprite_rom[2][07] = 16'b0000011111111110;
+    sprite_rom[2][08] = 16'b0000111111111110;
+    sprite_rom[2][09] = 16'b0001111111111110;
+    sprite_rom[2][10] = 16'b0011111111111100;
+    sprite_rom[2][11] = 16'b0111111111111100;
+    sprite_rom[2][12] = 16'b0011111111111000;
+    sprite_rom[2][13] = 16'b0001111111110000;
+    sprite_rom[2][14] = 16'b0000011111000000;
+    sprite_rom[2][15] = 16'b0000000000000000;
+end
+
+initial begin
+    sprite_rom[3][00] = 16'b0000011111000000;
+    sprite_rom[3][01] = 16'b0001111111110000;
+    sprite_rom[3][02] = 16'b0011111111111000;
+    sprite_rom[3][03] = 16'b0111111111111100;
+    sprite_rom[3][04] = 16'b0111111111111100;
+    sprite_rom[3][05] = 16'b1111111111111110;
+    sprite_rom[3][06] = 16'b1111111111111110;
+    sprite_rom[3][07] = 16'b1111111111111110;
+    sprite_rom[3][08] = 16'b1111111111111110;
+    sprite_rom[3][09] = 16'b1111111111111110;
+    sprite_rom[3][10] = 16'b0111111111111100;
+    sprite_rom[3][11] = 16'b0111111111111100;
+    sprite_rom[3][12] = 16'b0011111111111000;
+    sprite_rom[3][13] = 16'b0001111111110000;
+    sprite_rom[3][14] = 16'b0000011111000000;
+    sprite_rom[3][15] = 16'b0000000000000000;
+end
+
+
+always_comb begin
+
+    // Rotate 90 degreeish.
+    if (i_rotate[0]) begin
+        rom_c = line_count;
+        rom_r = pix_count;
     end else begin
-        o_color <= '0;
+        rom_r = line_count;
+        rom_c = pix_count;
+    end
+   
+end
+
+// Break this out to help infer RAMs.
+always_ff @(posedge i_clk) begin
+    rom_value <= sprite_rom[rom_sel][rom_r][rom_c];
+end
+
+always_comb begin
+    if(tvalid) begin
+        o_color.r = {8{rom_value}};
+        o_color.g = {8{rom_value}};
+        o_color.b = '0;
+    end else begin
+        o_color = '0;
     end
 end
 
@@ -57,6 +139,7 @@ always_ff @(posedge i_clk) begin
         line_count <= '0;
         xvalid <= '0;
         yvalid <= '0;
+        rom_sel <= '0;
     end else if (i_en) begin
         if (i_screen.x == i_pacman.x) begin
             xvalid <= 1'b1;
@@ -65,19 +148,29 @@ always_ff @(posedge i_clk) begin
             end
         end
 
+        if (i_screen == '0) begin
+            rom_sel <= rom_sel + 1;
+        end
+
         if (xvalid) begin
-            pix_count <= pix_count + 1;
+            if (i_rotate[1]) begin
+                pix_count <= pix_count - 1;
+            end else begin
+                pix_count <= pix_count + 1;
+            end
         end
 
         if (pix_count == 15) begin
-            pix_count <= '0;
             xvalid <= 1'b0;
-
             if (line_count == 15) begin
-                line_count <= '0;
                 yvalid <= 1'b0;
-            end else if (yvalid) begin
-                line_count <= line_count + 1;
+            end
+            if (yvalid) begin
+                if (i_rotate[2]) begin
+                    line_count <= line_count - 1;
+                end else begin
+                    line_count <= line_count + 1;
+                end
             end
         end
     end
