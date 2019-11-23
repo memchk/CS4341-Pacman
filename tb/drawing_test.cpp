@@ -28,7 +28,6 @@ public:
     }
 
     bool on_keypress(GdkEventKey *event) {
-        // std::cout << "KEYPRESS!" << std::endl;
         switch (event->keyval) {
             case GDK_KEY_a:
                 m_joystick = 0b0001;
@@ -54,22 +53,6 @@ public:
 			m_core->o_b);
         
         m_core->i_joystick = m_joystick;
-
-        // int time_const = 80000000;
-
-        // if(m_tickcount % time_const < time_const / 2) {
-        //     if (m_tickcount % time_const < time_const / 4) {
-        //         m_core->i_joystick = 0b0010;
-        //     } else {
-        //         m_core->i_joystick = 0b0001;
-        //     }
-        // } else {
-        //     if (m_tickcount % time_const < (3*time_const) / 4) {
-        //         m_core->i_joystick = 0b1000;
-        //     } else {
-        //         m_core->i_joystick = 0b0100;
-        //     }
-        // }
 
 		TESTB<Vdrawing_test>::tick();
 	}

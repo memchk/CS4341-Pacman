@@ -13,6 +13,7 @@ typedef enum {
     LATCH_INPUT,
     MOVEMENT,
     COLLISION,
+    SNAP_POS,
     UPDATE_OUTPUTS
 } state_t;
 
@@ -51,6 +52,9 @@ always_comb begin
             next_state = COLLISION;
         end
         COLLISION: begin
+            next_state = SNAP_POS;
+        end
+        SNAP_POS: begin
             next_state = UPDATE_OUTPUTS;
         end
         UPDATE_OUTPUTS: begin
@@ -79,7 +83,7 @@ always_ff @(posedge i_clk) begin
     end
 end
 
-// Input to Movement Processing.
+// Main Movement Processing.
 always_ff @(posedge i_clk) begin
     if (i_rst) begin
         o_pacman.x <= 64;
@@ -87,8 +91,9 @@ always_ff @(posedge i_clk) begin
         r_next_pos.x <= 64;
         r_next_pos.y <= 64;
         state <= IDLE;
-
     end else if (state == MOVEMENT) begin
+    // Perform basic movement calculations based on joystick input.
+    // Also associate a direction with it for sprite processing.
         case (1'b1)
             // Up.
             r_joystick[3]: begin
@@ -128,11 +133,13 @@ always_ff @(posedge i_clk) begin
         if (r_joystick[3] && o_pacman.y > 599) begin
             r_next_pos.y <= 599;
         end
+
     end else if (state == COLLISION) begin
+    // Look at the previously calculated new pos
         case (1'b1)
             // Up.
             r_joystick[3]: begin
-                map_y <= 5'((r_next_pos.y - 10'd8) >> 4);
+                map_y <= 5'((r_next_pos.y) >> 4);
                 map_x <= 6'((r_next_pos.x + 10'd8) >> 4);
             end
             // Right, look 16 right, 8 down.
@@ -140,17 +147,26 @@ always_ff @(posedge i_clk) begin
                 map_y <= 5'((r_next_pos.y + 10'd8) >> 4);
                 map_x <= 6'((r_next_pos.x + 10'd16) >> 4);
             end
-            // Down, look 8 to the right, 24 down (8 down from the bottom) 
+            // Down, look 8 to the right, 16 down
             r_joystick[1]: begin
-                map_y <= 5'((r_next_pos.y + 10'd24) >> 4);
+                map_y <= 5'((r_next_pos.y + 10'd16) >> 4);
                 map_x <= 6'((r_next_pos.x + 10'd8) >> 4);
             end
             // Left, look 8 to the left, and in the middle of pacman
             r_joystick[0]: begin
                 map_y <= 5'((r_next_pos.y + 10'd8) >> 4);
-                map_x <= 6'((r_next_pos.x - 10'd8) >> 4);
+                map_x <= 6'((r_next_pos.x) >> 4);
             end
         endcase
+    end else if (state == SNAP_POS) begin
+        if(o_pacman_dir != r_next_dir) begin
+            case (1'b1)
+                (r_joystick[0] | r_joystick[2]):
+                    r_next_pos.y[3:0] <= {4{&r_next_pos.y[3:2]}};                
+                (r_joystick[1] | r_joystick[3]):
+                    r_next_pos.x[3:0] <= {4{&r_next_pos.x[3:2]}};
+            endcase
+        end
     end else if (state == UPDATE_OUTPUTS) begin
         if (!will_collide) begin
             o_pacman <= r_next_pos;

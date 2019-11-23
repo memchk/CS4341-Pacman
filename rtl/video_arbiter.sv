@@ -19,7 +19,7 @@ module video_arbiter(
             o_vsync <= '0;
             o_hsync <= '0;
         end else begin
-            unique case (1'b1)
+            case (1'b1)
                 i_req[1]:
                     o_vport <= i_vport[1];
                 i_req[0]:

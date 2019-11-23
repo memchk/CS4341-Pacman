@@ -1,0 +1,114 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage{tabularx}
+\usepackage{caption}
+
+\setlength{\parindent}{0em}
+\renewcommand{\arraystretch}{1.25}
+% Title Block
+\title{
+    CS4341: Bec-Man System Design \\
+    \large The MetaStable Flip-Flops}
+\author{Carson Page \and Husna Chaudhary}
+\date{Fall 2019}
+\begin{document}
+\begin{titlepage}
+    \maketitle
+\end{titlepage}
+\tableofcontents
+\newpage
+
+\setlength{\parskip}{1em}
+
+\section{System Listing}
+\subsection{Defined Types}
+
+We defined multiple new types to assist in development. These are replicated
+commonly in the next sections.
+
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Type Name   & Width     & Description \\
+    \hline
+    s\_width\_t & clogb2(SCREEN\_WIDTH) & Generated type that fits the visible
+    screen width. \\
+    s\_height\_t & clogb2(SCREEN\_HEIGHT)  & Generated type that fits the visible
+    screen height. \\
+    coord\_t     &  s\_width\_t + s\_height\_t & XY Coordinate Pair. \\
+    rgb\_t      & [23:0]    & Packed struct representing 8:8:8 RGB color. \\
+    \hline
+\end{tabularx}
+
+\subsection{Module Descriptions}
+Each used module is documented here with a high-level description and its
+function. Detailed port listings follow in the next section.
+
+\subsection{Input List}
+Each module has its input(s) name, type, and description listed in a table
+below. Inputs that are prevelent and share the same semantic meaning are in Table
+\ref{tab:input_common}.
+
+\begingroup
+\captionof{table}{\textbf{Common Inputs}}
+\label{tab:input_common}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    i\_clk & logic & Global system clock tree. All logic is driven off of this
+    or a derived clock from a PLL / MMCM module. \\
+    i\_rst & logic & Active high reset. Module must reset registers and/or
+    outputs to known base state on activation. \\
+    i\_en   & logic & Active high clock enable. Registers part of the data path
+    should only update when activated. Control registers or edge detect
+    registers \emph{may} not be disabled on a low if necessary for proper function. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\newpage
+\begingroup
+\captionof{table}{\textbf{Video Timing Generator (vtg)}}
+\label{tab:input_vtg}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    ACTIVE\_WIDTH & parameter & The width of the visible area of the display. \\
+    ACTIVE\_HEIGHT & parameter & The height of the visible area of the display.
+    \\
+    V\_FRONT\_PORCH & parameter & Vertical front porch of the timing spec in
+    lines. \\
+    V\_BACK\_PORCH & parameter & Vertical back porch of the timing spec in
+    lines. \\
+    V\_PULSE & parameter & Length of vertical sync pulse in lines. \\
+    V\_POL & parameter & Defines if the module outputs a active high/low
+    vertical sync pulse. \\
+    H\_FRONT\_PORCH & parameter & Horizontal front porch of the timing spec in
+    pixels. \\
+    H\_BACK\_PORCH & parameter & Horizontal back porch of the timing spec in
+    pixels. \\
+    H\_PULSE & parameter & Length of horizontal sync pulse in pixels. \\
+    H\_POL & parameter & Defines if the module outputs a active high/low
+    horizontal sync pulse. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\begingroup
+\captionof{table}{\textbf{Game State Engine (game\_state)}}
+\label{tab:input_game_state}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    i\_joystick & logic [3:0] & Joystick Input, lowest bit represents the left
+    direction. Successive bits represent the next cardinal direction in a
+    counter-clockwise manner. The zero vector represents no input. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\subsection{Output List} 
+\end{document}

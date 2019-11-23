@@ -66,7 +66,7 @@ module drawing_test (
         .o_vport({o_r, o_g, o_b})
     );
 
-    bekman_sprite bs (
+    becman_sprite bs (
         .i_clk(i_clk),
         .i_rst(i_rst),
         .i_en(~blank),
