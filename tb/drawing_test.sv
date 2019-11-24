@@ -1,4 +1,3 @@
-`default_nettype none
 import project::rgb_t;
 import project::coord_t;
 import project::s_width_t;
@@ -8,26 +7,21 @@ module drawing_test (
     input logic i_clk, i_rst,
     input logic [3:0] i_joystick,
     output logic o_hsync, o_vsync,
-    output s_width_t screen_x,
-    output s_height_t screen_y,
     output logic [7:0] o_r, o_g, o_b
 );
     logic vtg_hsync, vtg_vsync;
     coord_t vtg_screen;
 
     logic [1:0] hsync_dly, vsync_dly;
-    coord_t screen_dly [1:0];
 
-    coord_t pacman;
-    logic [2:0] pacman_dir;
+    coord_t becman;
+    logic [2:0] becman_dir;
 
     rgb_t va_vport [1:0];
     logic [1:0] va_req;
 
     // assign o_hsync = hsync_dly[1];
     // assign o_vsync = vsync_dly[1];    
-    assign screen_x = screen_dly[1][9:0];
-    assign screen_y = screen_dly[1][19:10];
 
     logic vblank, hblank, blank;
 
@@ -50,8 +44,8 @@ module drawing_test (
         .i_rst(i_rst),
         .i_en(vblank),
         .i_joystick(i_joystick),
-        .o_pacman(pacman),
-        .o_pacman_dir(pacman_dir)
+        .o_becman(becman),
+        .o_becman_dir(becman_dir)
     ); 
 
     video_arbiter va (
@@ -70,10 +64,10 @@ module drawing_test (
         .i_clk(i_clk),
         .i_rst(i_rst),
         .i_en(~blank),
-        .i_pacman(pacman),
+        .i_becman(becman),
         .i_screen(vtg_screen),
         .o_color(va_vport[1]),
-        .i_rotate(pacman_dir),
+        .i_rotate(becman_dir),
         .o_valid(va_req[1])
     );
 
@@ -90,9 +84,6 @@ module drawing_test (
     always_ff @(posedge i_clk) begin
         vsync_dly <= {vsync_dly[0], vtg_vsync};
         hsync_dly <= {hsync_dly[0], vtg_hsync};
-
-        screen_dly[0] <= vtg_screen;
-        screen_dly[1] <= screen_dly[0];
     end
 
 endmodule

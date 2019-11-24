@@ -3,6 +3,9 @@
 \usepackage[letterpaper, margin=1in]{geometry}
 \usepackage{tabularx}
 \usepackage{caption}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage{tikz}
 
 \setlength{\parindent}{0em}
 \renewcommand{\arraystretch}{1.25}
@@ -19,7 +22,87 @@
 \tableofcontents
 \newpage
 
-\setlength{\parskip}{1em}
+\setlength{\parskip}{0.5em}
+
+\section{Module Descriptions and Listing}
+Each used module is documented here with a high-level description and its
+function. Detailed port listings follow in the next section.
+
+\subsection{Game State Engine (game\_state.sv)}
+The game state is where the "game" proper lives in logic. It is a combination of
+a sequencing state machine, along with a decision path, that produces the
+outputs required for the video layer.
+
+The logic is keyed into different states annotated by a $state$ enum. This state
+advanced unconditionally except when initially leaving the "idle" state. The
+condition for leaving the idle state is a positve edge on the state engine
+enable. This causes the game to update once per frame, allowing for consistant
+timing on based on the screen refresh rate.
+
+\subsection{Video Timing Generator (vtg.sv)}
+The Video Timing Generator is a critical component of timing and sequencing both the game state and
+video engine. Its principal role is for creating the necessary signals to output
+to a VGA display for video output. It also outputs screen coordinates internally
+to the rest of the design to allow the video systems to have an easy reference
+to the currently drawn pixels.
+
+The VTG is also used for sequencing the handover between the game state and the
+video subsystem. The vertical blanking signal is routed to the enable of the
+game state, and its inverse to the sprite engines. This allows game state to
+remain constant while the screen is drawing preventing visual artifacts, and
+provides for timing based on the screen refresh rate. The horizontal blanking
+signal is also used to properly sequence the sprite engines in addition to the
+vblank signal.
+
+\subsection{Sprite Generators (becman\_sprite.sv and map\_sprite.sv)}
+The sprite generators form the core of the video engine. They are a purely
+feedforward system, taking information from the VTG and the game state to blit
+pixels to the screen. Both the Bec-Man and Map sprite engine use a series of
+ROMs or RAMs to hold the graphics data.
+
+When a sprite engine decides to output a pixel, it emits a valid signal and the
+color information. This is fed into the video arbiter as a final processing
+step.
+
+\subsection{Map RAM (map\_ram.sv)}
+This hold the current map state. In our current implementation, the write signal
+is always held low treating it like a ROM, but it supports writes to enable a
+dynamic update of the map for future implementation of bonuses or dots.
+
+This was broken out as a seperate module to be easily reused in both the game
+state engine and the map sprite subsystems.
+
+\subsection{Video Arbiter (video\_arbiter.sv)}
+The video arbiter is the last component before sending the signal to the
+display. It decides for each pixel which sprite takes priority and has its color
+drawn to screen. This is done with a fixed priority based on input port.
+
+This is required as the video subsystem contains no framebuffer in memory,
+requiring it to generate video in realtime without a compositing step. This
+requires we select the appropriate signal in realtime as well. Since the valid
+signals are able to be toggled on a pixel by pixel basis, this allows a crude
+form of transparancy by allowing a lower priority pixel to come through at that
+time if a higher priortity pixel is not being shown. If no sprite engine is
+attempting to write data at that time, the arbiter outputs black to set a global
+background color.
+
+\subsection{TMDS Encoder (tmds\_encoder.sv)}
+\textbf{NOTE:} This module is unused in the final design, but noted here for refrence. It does
+not appear later in the document as such.
+
+The TMDS encoders function is to translate VGA signals into one that can be
+output using an FPGA's DDR I/O ports to a HDMI display. This allows the internal
+design to work with simple signals, and only apply the relatively complex TMDS
+encoding at a final processing stage.
+
+Since the design was not put onto an FPGA, this module was not used in the final
+test bench.
+
+\subsection{Primary Testbench (tb/drawing\_test.sv)}
+This is the primary testbench file that provides for the top level design. This
+is fed into Verilator to make a working cycle-accurate of the verilog as if it
+was on a hardware device like an FPGA or ASIC. It additionally breaks out the
+signals to enable the VGASim component of the Verilator to read the display information.
 
 \section{System Listing}
 \subsection{Defined Types}
@@ -27,6 +110,8 @@
 We defined multiple new types to assist in development. These are replicated
 commonly in the next sections.
 
+\begingroup
+\captionof{table}{\textbf{Defined Types}}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
     Type Name   & Width     & Description \\
@@ -39,12 +124,10 @@ commonly in the next sections.
     rgb\_t      & [23:0]    & Packed struct representing 8:8:8 RGB color. \\
     \hline
 \end{tabularx}
+\endgroup
 
-\subsection{Module Descriptions}
-Each used module is documented here with a high-level description and its
-function. Detailed port listings follow in the next section.
-
-\subsection{Input List}
+\newpage
+\subsection{Input Listing}
 Each module has its input(s) name, type, and description listed in a table
 below. Inputs that are prevelent and share the same semantic meaning are in Table
 \ref{tab:input_common}.
@@ -67,7 +150,7 @@ below. Inputs that are prevelent and share the same semantic meaning are in Tabl
 \end{tabularx}
 \endgroup
 
-\newpage
+\vspace{0.5in}
 \begingroup
 \captionof{table}{\textbf{Video Timing Generator (vtg)}}
 \label{tab:input_vtg}
@@ -96,6 +179,7 @@ below. Inputs that are prevelent and share the same semantic meaning are in Tabl
 \end{tabularx}
 \endgroup
 
+\vspace{0.5in}
 \begingroup
 \captionof{table}{\textbf{Game State Engine (game\_state)}}
 \label{tab:input_game_state}
@@ -110,5 +194,190 @@ below. Inputs that are prevelent and share the same semantic meaning are in Tabl
 \end{tabularx}
 \endgroup
 
-\subsection{Output List} 
+\vspace{0.5in}
+\begingroup
+\captionof{table}{\textbf{Bec-Man Sprite Generator (becman\_sprite)}}
+\label{tab:input_becman_state}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    i\_rotate & logic [2:0] & Dictates the rotation of the becman sprite. This
+    value must be held constant while the enable is active. \\
+    i\_becman & coord\_t & The screen top-left referenced screen coordnates of the
+    becman sprite. This value must be held constant while the enable is active. \\
+    i\_screen & coord\_t & The pixel currently being blited to the screen. This is
+    used to determine if the sprite contains an active pixel at the translated
+    coordinates. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\vspace{0.5in}
+\begingroup
+\captionof{table}{\textbf{Map Sprite Generator (map\_sprite)}}
+\label{tab:input_map_sprite}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    i\_screen & coord\_t & The pixel currently being blited to the screen. This is
+    used to determine if the sprite contains an active map element. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\vspace{0.5in}
+\begingroup
+\captionof{table}{\textbf{Map RAM (map\_ram)}}
+\label{tab:input_map_ram}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    i\_write & logic & Sets if the RAM is in read/write mode. \\
+    i\_tile\_x & logic [5:0] & The X address of the map tile. \\
+    i\_tile\_y & logic [4:0] & The Y address of the map tile. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\vspace{0.5in}
+\begingroup
+\captionof{table}{\textbf{Video Arbiter (video\_arbiter)}}
+\label{tab:input_map_ram}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    i\_vsync & logic & Passthrough input for vsync to keep it in sync with the
+    muxed video signal. \\
+    i\_hsync & logic & Passthrough input for hsync to keep it in sync with the
+    muxed video signal. \\
+    i\_req & logic [1:0] & Arbiter request input, MSB takes priority. A zero
+    vector indicates to draw the default color. \\
+    i\_vport & rgb\_t [1:0] & Array of input video ports. These are muxed
+    depedent on the decided input from the arbiter. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+%
+% OUTPUT LIST
+%
+\subsection{Output Listing}
+Each module has its output(s) name, type, and description listed in a table
+below.
+
+\begingroup
+\captionof{table}{\textbf{Video Timing Generator (vtg)}}
+\label{tab:output_vtg}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    o\_hsync & logic & Horizontal sync pulse output. \\
+    o\_vsync & logic & Vertical sync pulse output. \\
+    o\_hblank & logic & Active high when the display is in the horizontal blanking
+    period. \\
+    o\_vblank & logic & Active high when the display is in the vertical blanking
+    period. \\
+    o\_blank & logic & $o\_hblank \mid \mid o\_vblank$ \\
+    o\_screen & coord\_t & The current XY pixel being sent to the display, in
+    relation to the sync pulses. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\vspace{0.5in}
+\begingroup
+\captionof{table}{\textbf{Game State Engine (game\_state)}}
+\label{tab:output_game_state}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    o\_becman & coord\_t & Where the Bec-Man sprite should be drawn on the
+    display, as derived from the internal state. \\
+    o\_becman\_dir & logic [2:0] & The direction of the Bec-Man sprite should be
+    rotated to, as derived from the internal state. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\vspace{0.5in}
+\begingroup
+\captionof{table}{\textbf{Bec-Man Sprite Generator (becman\_sprite)}}
+\label{tab:output_becman_sprite}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    o\_valid & logic & Active high when the video system should blit pixels from
+    this sprite. \\
+    o\_color & rgb\_t & The color to display when $o\_valid$ is high. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\vspace{0.5in}
+\begingroup
+\captionof{table}{\textbf{Map Sprite Generator (map\_sprite)}}
+\label{tab:output_map_sprite}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    o\_valid & logic & Active high when the video system should blit pixels from
+    this sprite. \\
+    o\_color & rgb\_t & The color to display when $o\_valid$ is high. \\    
+    \hline
+\end{tabularx}
+\endgroup
+
+\newpage
+\begingroup
+\captionof{table}{\textbf{Map RAM (map\_ram)}}
+\label{tab:output_map_ram}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    o\_tile\_value & logic & Active high when a tile is present at the input
+    coordinates. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\vspace{0.5in}
+\begingroup
+\captionof{table}{\textbf{Video Arbiter (video\_arbiter)}}
+\label{tab:output_map_ram}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    o\_vport & rgb\_t & The selected video signal based on the input request and
+    priority level. \\
+    o\_hsync & logic & Passthrough of the input hsync signal for timing
+    purposes. \\
+    o\_vsync & logic & Passthrough of the input vsync signal for timing purposes. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\section{Diagrams}
+The various circuit and state diagrams are included here, on seperate pages.
+
+\begin{sidewaysfigure}[ht]
+    \includegraphics[width=\textwidth]{TopLevelDiagram.png}
+    \caption{Top Level Block Diagram of the Bec-Man System.}
+    \label{fig:LandscapeFigure}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[ht]
+    \includegraphics[width=\textwidth]{Sequencer.png}
+    \caption{Sequencer State Machine.}
+    \label{fig:LandscapeFigure}
+\end{sidewaysfigure}
 \end{document}

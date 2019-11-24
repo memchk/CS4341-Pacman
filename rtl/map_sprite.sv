@@ -1,6 +1,3 @@
-`default_nettype none
-
-
 import project::clogb2;
 import project::coord_t;
 import project::rgb_t;

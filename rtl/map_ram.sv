@@ -7,43 +7,6 @@ module map_ram (
 
 reg [49:0] r_map_ram [32];
 
-// initial begin
-//     r_map_ram[00] = '1;
-//     r_map_ram[01] = 51'h2000000000001;
-//     r_map_ram[02] = 51'h2000000000001;
-//     r_map_ram[03] = 51'h2000000000001;
-//     r_map_ram[04] = 51'h2000000000001;
-//     r_map_ram[05] = 51'h2000000000001;
-//     r_map_ram[06] = 51'h2000000000001;
-//     r_map_ram[07] = 51'h2000000000001;
-
-//     r_map_ram[08] = 51'h2000000000001;
-//     r_map_ram[09] = 51'h2000000000001;
-//     r_map_ram[10] = 51'h2000000000001;
-//     r_map_ram[11] = 51'h2000000000001;
-//     r_map_ram[12] = 51'h2000000000001;
-//     r_map_ram[13] = 51'h2000000000001;
-//     r_map_ram[14] = 51'h2000000000001;
-//     r_map_ram[15] = 51'h2000000000001;
-//     r_map_ram[16] = 51'h2000000000001;
-//     r_map_ram[17] = 51'h2000000000001;
-//     r_map_ram[18] = 51'h2000000000001;
-//     r_map_ram[19] = 51'h2000000000001;
-//     r_map_ram[20] = 51'h2000000000001;
-//     r_map_ram[21] = 51'h2000000000001;
-//     r_map_ram[22] = 51'h2000000000001;
-//     r_map_ram[23] = 51'h2000000000001;
-
-//     r_map_ram[24] = 51'h2000000000001;
-//     r_map_ram[25] = 51'h2000000000001;
-//     r_map_ram[26] = 51'h2000000000001;
-//     r_map_ram[27] = 51'h2000000000001;
-//     r_map_ram[28] = 51'h2000000000001;
-//     r_map_ram[29] = 51'h2000000000001;
-//     r_map_ram[30] = 51'h2000000000001;
-//     r_map_ram[31] = '1;
-// end
-
 initial begin
     r_map_ram[00] = 50'b11111111111111111111111111111111111111111111111111;
     r_map_ram[01] = 50'b10000000000001111000000000010000000000000000000001;
@@ -80,8 +43,12 @@ initial begin
 end
 
 always_ff @(posedge i_clk) begin
-    if(i_en && !i_write) begin
-        o_tile_value <= r_map_ram[i_tile_y][i_tile_x];
+    if(i_en) begin
+        if(i_write) begin
+            r_map_ram[i_tile_y][i_tile_x] <= '0;
+        end else begin
+            o_tile_value <= r_map_ram[i_tile_y][i_tile_x];
+        end
     end
 end
 

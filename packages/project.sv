@@ -33,5 +33,6 @@ typedef struct packed {
     logic [7:0] b;
 } rgb_t;
 
-endpackage;
+endpackage
+
 `endif

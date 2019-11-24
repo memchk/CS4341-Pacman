@@ -1,4 +1,3 @@
-`default_nettype none
 import project::coord_t;
 import project::clogb2;
 
