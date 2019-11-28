@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage{rotating}
 \usepackage{tikz}
+\usepackage{float}
 
 \setlength{\parindent}{0em}
 \renewcommand{\arraystretch}{1.25}
@@ -245,7 +246,7 @@ below. Inputs that are prevelent and share the same semantic meaning are in Tabl
 \vspace{0.5in}
 \begingroup
 \captionof{table}{\textbf{Video Arbiter (video\_arbiter)}}
-\label{tab:input_map_ram}
+\label{tab:input_video_arbiter}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
     Name & Type & Description \\
@@ -352,7 +353,7 @@ below.
 \vspace{0.5in}
 \begingroup
 \captionof{table}{\textbf{Video Arbiter (video\_arbiter)}}
-\label{tab:output_map_ram}
+\label{tab:output_video_arbiter}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
     Name & Type & Description \\
@@ -366,18 +367,65 @@ below.
 \end{tabularx}
 \endgroup
 
+\newpage
 \section{Diagrams}
-The various circuit and state diagrams are included here, on seperate pages.
+The various circuit and state diagrams are included here on seperate pages. \\
+\textbf{NOTE:} Vivado breaks up packed structs when generating diagrams, so a
+wire of type $rgb\_t$ will be broken into three wires for the diagram, labled
+each with an R, G, and B component. In addition, Vivado will postfix registers
+with "\_reg".
 
-\begin{sidewaysfigure}[ht]
+\begin{sidewaysfigure}[htp]
     \includegraphics[width=\textwidth]{TopLevelDiagram.png}
     \caption{Top Level Block Diagram of the Bec-Man System.}
     \label{fig:LandscapeFigure}
 \end{sidewaysfigure}
 
-\begin{sidewaysfigure}[ht]
+\begin{sidewaysfigure}[htp]
+    \includegraphics[width=\textwidth]{VideoArbiter.png}
+    \caption{Video Arbiter}
+    \label{fig:LandscapeFigure}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[htp]
+    \includegraphics[width=\textwidth]{MapSprite.png}
+    \caption{Map Sprite Engine}
+    \label{fig:LandscapeFigure}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[htp]
+    \includegraphics[width=\textwidth]{BecmanSpritePt1.png}
+    \caption{Becman Sprite Engine}
+    \label{fig:LandscapeFigure}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[htp]
+    \includegraphics[width=\textwidth]{BecmanSpritePt2.png}
+    \caption{Becman Sprite Engine Cont.}
+    \label{fig:LandscapeFigure}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[htp]
+    \includegraphics[width=\textwidth]{GameStatePt1.png}
+    \caption{Game State Engine}
+    \label{fig:LandscapeFigure}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[htp]
+    \includegraphics[width=\textwidth]{GameStatePt2.png}
+    \caption{Game State Engine Cont.}
+    \label{fig:LandscapeFigure}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[htp]
+    \includegraphics[width=\textwidth]{GameStatePt3.png}
+    \caption{Game State Engine Cont.}
+    \label{fig:LandscapeFigure}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[htp]
     \includegraphics[width=\textwidth]{Sequencer.png}
-    \caption{Sequencer State Machine.}
+    \caption{Sequencer State Machine}
     \label{fig:LandscapeFigure}
 \end{sidewaysfigure}
 \end{document}

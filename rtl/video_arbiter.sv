@@ -17,14 +17,13 @@ module video_arbiter(
             o_vsync <= '0;
             o_hsync <= '0;
         end else begin
-            case (1'b1)
-                i_req[1]:
-                    o_vport <= i_vport[1];
-                i_req[0]:
-                    o_vport <= i_vport[0];
-                default:
-                    o_vport <= '0;
-            endcase
+            if (i_req[1]) begin
+                o_vport <= i_vport[1];
+            end else if (i_req[0]) begin
+                o_vport <= i_vport[0];
+            end else begin
+                o_vport <= '0;
+            end
 
             o_hsync <= i_hsync;
             o_vsync <= i_vsync;

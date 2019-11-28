@@ -7,7 +7,7 @@ module game_state (
 );
 import project::*;
 
-typedef enum {
+typedef enum logic [5:0] {
     IDLE,
     LATCH_INPUT,
     MOVEMENT,
