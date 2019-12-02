@@ -7,7 +7,7 @@ OBJDIR  := obj_dir
 VOBJS   := $(OBJDIR)/verilated.o $(OBJDIR)/verilated_vcd_c.o
 VINCS	:= -I $(VINCD) -I $(OBJDIR)
 VGASIM  := tb/vgasim/vgasim.cpp tb/vgasim/image.cpp
-CXXFLAGS := -O3 -march=native
+CXXFLAGS := -O3 -march=native -flto
 DEPS := $(wildcard $(OBJDIR)/*.d)
 
 ALLSV := $(wildcard rtl/*.sv) $(wildcard tb/*.sv)

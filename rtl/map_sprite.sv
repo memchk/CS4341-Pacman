@@ -13,7 +13,7 @@ logic [5:0] ram_addr_x;
 logic [4:0] ram_addr_y;
 
 logic tile_value, addr_valid;
-assign o_valid = tile_value && addr_valid;
+assign o_valid = '1;
 
 map_ram mr (
     .i_clk(i_clk),
@@ -25,11 +25,11 @@ map_ram mr (
 );
 
 always_comb begin
-    if(o_valid) begin
-        o_color = '0;
+    o_color = '0;
+    if (addr_valid) begin
         o_color.b = {8{tile_value}};
     end else begin
-        o_color = '0;
+        o_color = {3{8'h80}};
     end
 end
 

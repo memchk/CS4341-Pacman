@@ -100,22 +100,22 @@ always_ff @(posedge i_clk) begin
         case (1'b1)
             // Up.
             r_joystick[3]: begin
-                r_next_pos.y <= o_becman.y - 4;
+                r_next_pos.y <= o_becman.y - 2;
                 r_next_dir <= 3'b101;
             end
             // Right.
             r_joystick[2]: begin
-                r_next_pos.x <= o_becman.x + 4;
+                r_next_pos.x <= o_becman.x + 2;
                 r_next_dir <= 3'b000;
             end
             // Down.
             r_joystick[1]: begin
-                r_next_pos.y <= o_becman.y + 4;
+                r_next_pos.y <= o_becman.y + 2;
                 r_next_dir <= 3'b001;
             end
             // Left.
             r_joystick[0]: begin
-                r_next_pos.x <= o_becman.x - 4;
+                r_next_pos.x <= o_becman.x - 2;
                 r_next_dir <= 3'b010;
             end
         endcase
@@ -129,12 +129,12 @@ always_ff @(posedge i_clk) begin
             r_next_pos.x <= 799;
         end
 
-        if (r_joystick[1] && o_becman.y > 599) begin
+        if (r_joystick[1] && o_becman.y > 495) begin
             r_next_pos.y <= '0;
         end
 
-        if (r_joystick[3] && o_becman.y > 599) begin
-            r_next_pos.y <= 599;
+        if (r_joystick[3] && o_becman.y > 495) begin
+            r_next_pos.y <= 495;
         end
 
     end else if (state == COLLISION) begin
