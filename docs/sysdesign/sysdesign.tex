@@ -21,9 +21,93 @@
     \maketitle
 \end{titlepage}
 \tableofcontents
+\cleardoublepage
+\listoftables
+\listoffigures
 \newpage
 
 \setlength{\parskip}{0.5em}
+
+\section{Parts List}
+The parts list given here are derived from Vivado 2019.1, during the RTL
+expansion phase of synthesis. If built from discrete logic, these listed
+components would approximate the real world components necessary to build the
+system. Following it is an implementation report for a Xilinx Artix-7 FPGA.
+
+\newpage
+\begin{center}
+\captionof{table}{\textbf{RTL Parts List}}
+\begin{tabular}{ ||c|l|| }
+    \hline
+    Part Name & Count \\
+    \hline
+        2 Input, 12 Bit Adder & 1 \\ 
+        2 Input, 11 Bit Adder & 1 \\  
+        2 Input, 10 Bit Adder & 8 \\  
+        2 Input,  4 Bit Adder & 2 \\  
+        2 Input,  2 Bit Adder & 1 \\
+        \hline
+        12 Bit Register & 1 \\
+        11 Bit Register & 1 \\  
+        10 Bit Register & 4 \\
+        8 Bit Register & 3 \\
+        6 Bit Register & 2 \\
+        5 Bit Register & 2 \\
+        4 Bit Register & 3 \\  
+        3 Bit Register & 2 \\
+        2 Bit Register & 4 \\
+        1 Bit Register & 13 \\
+        \hline
+        1K Single Port RAM & 2 \\
+        \hline
+        2 Input,      50 Bit,        Mux & 2 \\
+        \multicolumn{2}{||c||}{\textbf{NOTE:} This can be replaced with async ROM chip:} \\
+        65 Input,     16 Bit,        Mux & 1     \\ 
+         2 Input,     12 Bit,        Mux & 1     \\
+         2 Input,     11 Bit,        Mux & 1     \\
+         2 Input,     10 Bit,        Mux & 12    \\
+         5 Input,     10 Bit,        Mux & 2     \\
+         2 Input,      8 Bit,        Mux & 7     \\
+         6 Input,      6 Bit,        Mux & 1     \\
+         2 Input,      6 Bit,        Mux & 1     \\
+         2 Input,      4 Bit,        Mux & 4     \\
+         3 Input,      4 Bit,        Mux & 4     \\
+         5 Input,      3 Bit,        Mux & 1     \\
+         5 Input,      1 Bit,        Mux & 4     \\
+         2 Input,      1 Bit,        Mux & 11    \\
+         3 Input,      1 Bit,        Mux & 1  \\
+    \hline
+\end{tabular}
+\end{center}
+
+\newpage
+\begin{center}
+\captionof{table}{\textbf{Artix-7 Implementation}}
+\begin{tabularx}{\linewidth}{ ||c|l|X|| }
+    \hline
+    Part Name & Count & Description\\
+    BUFG     &     1  & Global clock buffer. Used to insert a signal onto the FPGA's
+    global clock tree. \\
+    CARRY4   &     5  & Carry logic between LUTs in different slices. Used to
+    implement high-speed ripple-carry adders in fabric.\\
+    LUT1     &     4  & 1-input, 1-output lookup table, generic logic function. \\
+    LUT2     &    18  & 2-input, 1-output lookup table, generic logic function. \\
+    LUT3     &    40  & 3-input, 1-output lookup table, generic logic function. \\
+    LUT4     &    24  & 4-input, 1-output lookup table, generic logic function. \\
+    LUT5     &    35  & 5-input, 1-output lookup table, generic logic function. \\
+    LUT6     &   102  & 6-input, 1-output lookup table, generic logic function. \\
+    MUXF7    &    14  & General-Purpose Multiplexer. \\
+    MUXF8    &     3  & General-Purpose Multiplexer. \\
+    RAM32X1S &   100  & Fabric distributed ROM. Used to store data on-masse near
+    computation without Block RAM overhead. \\
+    FDRE     &   121  & Synchronous Edge-Triggered D-Flip Flop with Reset
+    Signal. \\
+    FDSE     &    11  & Synchronous Edge-Triggered D-Flip Flop with Set Signal. \\
+    IBUF     &     6  & Input Buffer. Used to bring signals into the FPGA. \\
+    OBUF     &    26  & Output Buffer. Used to bring signals into the FPGA. \\
+    \hline
+\end{tabularx}
+\end{center}
 
 \section{Module Descriptions and Listing}
 Each used module is documented here with a high-level description and its
@@ -44,7 +128,7 @@ timing on based on the screen refresh rate.
 The Video Timing Generator is a critical component of timing and sequencing both the game state and
 video engine. Its principal role is for creating the necessary signals to output
 to a VGA display for video output. It also outputs screen coordinates internally
-to the rest of the design to allow the video systems to have an easy reference
+to the rest of the design to allow the video systems to have an easy reference 
 to the currently drawn pixels.
 
 The VTG is also used for sequencing the handover between the game state and the
@@ -88,7 +172,7 @@ attempting to write data at that time, the arbiter outputs black to set a global
 background color.
 
 \subsection{TMDS Encoder (tmds\_encoder.sv)}
-\textbf{NOTE:} This module is unused in the final design, but noted here for refrence. It does
+\textbf{NOTE:} This module is unused in the design as implemented, but noted here for reference. It does
 not appear later in the document as such.
 
 The TMDS encoders function is to translate VGA signals into one that can be
@@ -96,7 +180,7 @@ output using an FPGA's DDR I/O ports to a HDMI display. This allows the internal
 design to work with simple signals, and only apply the relatively complex TMDS
 encoding at a final processing stage.
 
-Since the design was not put onto an FPGA, this module was not used in the final
+Since the design was not sucessfully put onto an FPGA by project completion, this module was not used in the final
 test bench.
 
 \subsection{Primary Testbench (tb/drawing\_test.sv)}
@@ -106,6 +190,11 @@ was on a hardware device like an FPGA or ASIC. It additionally breaks out the
 signals to enable the VGASim component of the Verilator to read the display information.
 
 \section{System Listing}
+
+Each of the modules Inputs, Outputs, and Notable Registers are listed here. This
+also satisfies the interface listing requirements as each module describes how
+it may interconnect with other modules.
+
 \subsection{Defined Types}
 
 We defined multiple new types to assist in development. These are replicated
@@ -153,7 +242,7 @@ below. Inputs that are prevelent and share the same semantic meaning are in Tabl
 
 \vspace{0.5in}
 \begingroup
-\captionof{table}{\textbf{Video Timing Generator (vtg)}}
+\captionof{table}{\textbf{Video Timing Generator Inputs (vtg)}}
 \label{tab:input_vtg}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -182,7 +271,7 @@ below. Inputs that are prevelent and share the same semantic meaning are in Tabl
 
 \vspace{0.5in}
 \begingroup
-\captionof{table}{\textbf{Game State Engine (game\_state)}}
+\captionof{table}{\textbf{Game State Engine Inputs (game\_state)}}
 \label{tab:input_game_state}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -197,7 +286,7 @@ below. Inputs that are prevelent and share the same semantic meaning are in Tabl
 
 \vspace{0.5in}
 \begingroup
-\captionof{table}{\textbf{Bec-Man Sprite Generator (becman\_sprite)}}
+\captionof{table}{\textbf{Bec-Man Sprite Generator Inputs (becman\_sprite)}}
 \label{tab:input_becman_state}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -216,7 +305,7 @@ below. Inputs that are prevelent and share the same semantic meaning are in Tabl
 
 \vspace{0.5in}
 \begingroup
-\captionof{table}{\textbf{Map Sprite Generator (map\_sprite)}}
+\captionof{table}{\textbf{Map Sprite Generator Inputs (map\_sprite)}}
 \label{tab:input_map_sprite}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -230,7 +319,7 @@ below. Inputs that are prevelent and share the same semantic meaning are in Tabl
 
 \vspace{0.5in}
 \begingroup
-\captionof{table}{\textbf{Map RAM (map\_ram)}}
+\captionof{table}{\textbf{Map RAM Inputs (map\_ram)}}
 \label{tab:input_map_ram}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -245,7 +334,7 @@ below. Inputs that are prevelent and share the same semantic meaning are in Tabl
 
 \vspace{0.5in}
 \begingroup
-\captionof{table}{\textbf{Video Arbiter (video\_arbiter)}}
+\captionof{table}{\textbf{Video Arbiter Inputs (video\_arbiter)}}
 \label{tab:input_video_arbiter}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -271,7 +360,7 @@ Each module has its output(s) name, type, and description listed in a table
 below.
 
 \begingroup
-\captionof{table}{\textbf{Video Timing Generator (vtg)}}
+\captionof{table}{\textbf{Video Timing Generator Outputs (vtg)}}
 \label{tab:output_vtg}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -292,7 +381,7 @@ below.
 
 \vspace{0.5in}
 \begingroup
-\captionof{table}{\textbf{Game State Engine (game\_state)}}
+\captionof{table}{\textbf{Game State Engine Outputs (game\_state)}}
 \label{tab:output_game_state}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -308,7 +397,7 @@ below.
 
 \vspace{0.5in}
 \begingroup
-\captionof{table}{\textbf{Bec-Man Sprite Generator (becman\_sprite)}}
+\captionof{table}{\textbf{Bec-Man Sprite Generator Outputs (becman\_sprite)}}
 \label{tab:output_becman_sprite}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -323,7 +412,7 @@ below.
 
 \vspace{0.5in}
 \begingroup
-\captionof{table}{\textbf{Map Sprite Generator (map\_sprite)}}
+\captionof{table}{\textbf{Map Sprite Generator Outputs (map\_sprite)}}
 \label{tab:output_map_sprite}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -338,7 +427,7 @@ below.
 
 \newpage
 \begingroup
-\captionof{table}{\textbf{Map RAM (map\_ram)}}
+\captionof{table}{\textbf{Map RAM Outputs (map\_ram)}}
 \label{tab:output_map_ram}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -352,7 +441,7 @@ below.
 
 \vspace{0.5in}
 \begingroup
-\captionof{table}{\textbf{Video Arbiter (video\_arbiter)}}
+\captionof{table}{\textbf{Video Arbiter Outputs (video\_arbiter)}}
 \label{tab:output_video_arbiter}
 \begin{tabularx}{\linewidth}{ ||c|c|X|| }
     \hline
@@ -367,8 +456,102 @@ below.
 \end{tabularx}
 \endgroup
 
+%
+% Register List
+%
+\subsection{Register Listing}
+Each module has its registers wires(s) name, type, and description listed in a table
+below, where applicable.
+
+\begingroup
+\captionof{table}{\textbf{Video Timing Generator Interfacing (vtg)}}
+\label{tab:interface_vtg}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    r\_pix\_cnt & logic [clogb2(H\_TOTAL-1):0] & Master horizontal count state.
+    \\
+    r\_line\_cnt & logic [clogb2(V\_TOTAL-1):0] & Master vertical count state.
+    \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\vspace{0.5in}
+\begingroup
+\captionof{table}{\textbf{Game State Engine Interfacing (game\_state)}}
+\label{tab:interface_game_state}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    r\_en\_edge & logic [1:0] & Register used to detect the enable edge on
+    $vblank$ to advance states. \\
+    r\_joystick & logic [1:0] & Latches input during state computation. \\
+    will\_collide & logic & Stores weather becman will collide this frame. \\
+    r\_next\_pos & coord\_t & Stores becman's position to be drawn next frame
+    during computation. \\
+    r\_next\_dir & logic [2:0] & Stores the computed rotation for the becman
+    sprite during computation. \\
+    state & state\_t & Keeps track of the current state of the micro-sequencer FSM.\\
+    \hline
+\end{tabularx}
+\endgroup
+
 \newpage
-\section{Diagrams}
+
+\vspace{0.5in}
+\begingroup
+\captionof{table}{\textbf{Bec-Man Sprite Generator Interfacing (becman\_sprite)}}
+\label{tab:output_becman_sprite}
+\begin{tabularx}{\linewidth}{ ||c|c|X|| }
+    \hline
+    Name & Type & Description \\
+    \hline
+    r\_pix\_count & logic [3:0] & Sprite horizontal count state.
+    \\
+    r\_line\_count & logic [3:0] & Sprite vertical count state. \\
+    x/yvalid & logic & Determines weather sprite should enable output.
+    \\
+    \hline
+\end{tabularx}
+\endgroup
+
+%
+% MODE LIST
+%
+\subsection{Mode Listing}
+The system contains several modal systems listed here.
+
+\subsubsection*{Top Level}
+The primary system has two modes, state update and rendering. These are
+controlled by the vtg $o\_vblank$, $o\_hblank$, and $o\_blank$ signals in a variety
+of ways. In general, it works as follows:
+
+\begingroup
+\captionof{table}{\textbf{Top Level Drawing Modes}}
+\label{tab:top_level_video_mode}
+\begin{tabularx}{\linewidth}{ ||c|X|| }
+    \hline
+    $vblank$ & Description \\
+    \hline
+    Logic High & System is in state update mode. The game state engine advances through a
+    single cycle of the microsequencer. Conversely, video output is disabled as
+    we are in the blanking period. \\
+    Logic Low & System is in drawing mode. The state engine is halted, and the
+    enables come alive for the sprite engines. These are further gated by the
+    $o\_hblank$ signals to maintain horizontal drawing accuracy. \\
+    \hline
+\end{tabularx}
+\endgroup
+
+\subsubsection*{Map RAM}
+The Map RAM can in theory be in two modes, read or write as controlled by
+$i\_write$. However, this is currently hard-wired to read in the current implementation.
+
+\newpage
+\section{Circuit Diagrams}
 The various circuit and state diagrams are included here on seperate pages. \\
 \textbf{NOTE:} Vivado breaks up packed structs when generating diagrams, so a
 wire of type $rgb\_t$ will be broken into three wires for the diagram, labled
