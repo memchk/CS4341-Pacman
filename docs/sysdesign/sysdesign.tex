@@ -119,15 +119,15 @@ a sequencing state machine, along with a decision path, that produces the
 outputs required for the video layer.
 
 The logic is keyed into different states annotated by a $state$ enum. This state
-advanced unconditionally except when initially leaving the "idle" state. The
+advances unconditionally except when initially leaving the "idle" state. The
 condition for leaving the idle state is a positve edge on the state engine
 enable. This causes the game to update once per frame, allowing for consistant
-timing on based on the screen refresh rate.
+timing based on the screen refresh rate.
 
 \subsection{Video Timing Generator (vtg.sv)}
-The Video Timing Generator is a critical component of timing and sequencing both the game state and
+The VTG (Video Timing Generator) is a critical component of timing and sequencing both the game state and
 video engine. Its principal role is for creating the necessary signals to output
-to a VGA display for video output. It also outputs screen coordinates internally
+video to a VGA display. It also outputs screen coordinates internally
 to the rest of the design to allow the video systems to have an easy reference 
 to the currently drawn pixels.
 
@@ -150,7 +150,7 @@ color information. This is fed into the video arbiter as a final processing
 step.
 
 \subsection{Map RAM (map\_ram.sv)}
-This hold the current map state. In our current implementation, the write signal
+This holds the current map state. In our current implementation, the write signal
 is always held low treating it like a ROM, but it supports writes to enable a
 dynamic update of the map for future implementation of bonuses or dots.
 
@@ -172,20 +172,19 @@ attempting to write data at that time, the arbiter outputs black to set a global
 background color.
 
 \subsection{TMDS Encoder (tmds\_encoder.sv)}
-\textbf{NOTE:} This module is unused in the design as implemented, but noted here for reference. It does
-not appear later in the document as such.
+\textbf{NOTE:} This module is only required if implemented in real harware
+therefore it is simply noted here for reference.
 
 The TMDS encoders function is to translate VGA signals into one that can be
 output using an FPGA's DDR I/O ports to a HDMI display. This allows the internal
-design to work with simple signals, and only apply the relatively complex TMDS
+design to work with simple signals, and only applies the relatively complex TMDS
 encoding at a final processing stage.
 
-Since the design was not sucessfully put onto an FPGA by project completion, this module was not used in the final
-test bench.
+\textbf{NOTE:} this module was not used in the final test bench.
 
 \subsection{Primary Testbench (tb/drawing\_test.sv)}
 This is the primary testbench file that provides for the top level design. This
-is fed into Verilator to make a working cycle-accurate of the verilog as if it
+is fed into Verilator to create a working cycle-accurate simulation of the verilog as if it
 was on a hardware device like an FPGA or ASIC. It additionally breaks out the
 signals to enable the VGASim component of the Verilator to read the display information.
 
@@ -193,7 +192,7 @@ signals to enable the VGASim component of the Verilator to read the display info
 
 Each of the modules Inputs, Outputs, and Notable Registers are listed here. This
 also satisfies the interface listing requirements as each module describes how
-it may interconnect with other modules.
+it connects with other modules.
 
 \subsection{Defined Types}
 
@@ -234,7 +233,7 @@ below. Inputs that are prevelent and share the same semantic meaning are in Tabl
     i\_rst & logic & Active high reset. Module must reset registers and/or
     outputs to known base state on activation. \\
     i\_en   & logic & Active high clock enable. Registers part of the data path
-    should only update when activated. Control registers or edge detect
+    and should only update when activated. Control registers or edge detect
     registers \emph{may} not be disabled on a low if necessary for proper function. \\
     \hline
 \end{tabularx}
